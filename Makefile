@@ -8,24 +8,21 @@ makefile_path    := $(abspath $(firstword $(MAKEFILE_LIST)))
 makefile_dir     := $(patsubst %/,%,$(dir $(makefile_path)))
 src_dir          := $(makefile_dir)/src
 test_dir         := $(makefile_dir)/tests
+include_dir      := $(makefile_dir)/include
+bin_dir          := $(makefile_dir)/bin
 
-# Output app binary
-exe := clogger
-
-# App sources
+# Lib sources
 src := $(shell find $(src_dir) -type f -name "*.c" -o -name "*.h")
-includes := $(sort $(dir $(wildcard $(src_dir)/*/)))
 objects := $(patsubst %.c, %.o, $(filter %.c,$(src)))
 
 # Test sources
 test_src := $(shell find $(test_dir) -type f -name "*.c" -o -name "*.h")
-test_includes := $(sort $(dir $(wildcard $(test_dir)/*/)))
 test_objects := $(patsubst %.c, %.o, $(filter %.c,$(test_src)))
-
-CC := gcc
 
 # Recipe settings
 SHELL         := bash
+CC            := gcc
+CFLAGS        := -I $(include_dir)
 .DEFAULT_GOAL := help
 
 .PHONY: help
@@ -46,23 +43,13 @@ help:
 
 .PHONY: test
 #: Run tests
-test: run_test
-	./$<
-
-run_test: $(test_objects) $(objects)
-	gcc $^ -o $@ -lm
-
-.PHONY: comp
-#: Compile application
-comp: $(exe)
-$(exe): $(objects)
-	gcc $^ -o $@
+test: $(bin_dir)/run_test
+	$<
 
 .PHONY: clean
 #: Clean all output files
 clean: mostlyclean
-	rm -rf $(exe)
-	rm -rf run_test
+	rm -rf $(bin_dir)
 
 .PHONY: mostlyclean
 #: Clean object files and logs
@@ -70,6 +57,10 @@ mostlyclean:
 	rm -rf $(objects)
 	rm -rf $(test_objects)
 	rm -rf *.log
+
+$(bin_dir)/run_test: $(test_objects) $(objects)
+	@mkdir -p $(@D)
+	gcc $^ -o $@ -lm
 
 $(objects): $(src)
 

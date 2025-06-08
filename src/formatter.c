@@ -3,7 +3,7 @@
  *   Copyright (C) 2025  Mirko Lindroth
  *   SPDX-License-Identifier: MIT
  */
-#include "clogger.h"
+#include <clogger/formatter.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

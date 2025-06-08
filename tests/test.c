@@ -6,7 +6,7 @@
 #ifndef CLOGGER_TEST
 #define CLOGGER_TEST
 
-#include "../src/clogger.h"
+#include <clogger/formatter.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
