@@ -8,16 +8,26 @@ makefile_path    := $(abspath $(firstword $(MAKEFILE_LIST)))
 makefile_dir     := $(patsubst %/,%,$(dir $(makefile_path)))
 src_dir          := $(makefile_dir)/src
 test_dir         := $(makefile_dir)/tests
+example_dir      := $(makefile_dir)/examples
 include_dir      := $(makefile_dir)/include
 bin_dir          := $(makefile_dir)/bin
 
 # Lib sources
 src := $(shell find $(src_dir) -type f -name "*.c" -o -name "*.h")
 objects := $(patsubst %.c, %.o, $(filter %.c,$(src)))
+bin := $(bin_dir)/clogger
 
 # Test sources
 test_src := $(shell find $(test_dir) -type f -name "*.c" -o -name "*.h")
 test_objects := $(patsubst %.c, %.o, $(filter %.c,$(test_src)))
+test_bins := $(patsubst %.c, $(bin_dir)/$(basename %), \
+		$(filter %.c,$(notdir $(test_src))))
+
+# Example sources
+example_src := $(shell find $(example_dir) -type f -name "*.c" -o -name "*.h")
+example_objects := $(patsubst %.c, %.o, $(filter %.c,$(example_src)))
+example_bins := $(patsubst %.c, $(bin_dir)/$(basename %), \
+		$(filter %.c,$(notdir $(example_src))))
 
 # Recipe settings
 SHELL         := bash
@@ -43,8 +53,12 @@ help:
 
 .PHONY: test
 #: Run tests
-test: $(bin_dir)/run_test
+test: $(test_bins)
 	$<
+
+.PHONY: examples
+#: Compiles examples
+examples: $(example_bins)
 
 .PHONY: clean
 #: Clean all output files
@@ -56,12 +70,23 @@ clean: mostlyclean
 mostlyclean:
 	rm -rf $(objects)
 	rm -rf $(test_objects)
+	rm -rf $(example_objects)
 	rm -rf *.log
 
-$(bin_dir)/run_test: $(test_objects) $(objects)
+$(bin_dir)/clogger: $(objects)
+	@mkdir -p $(@D)
+	gcc $^ -o $@ -lm
+
+$(test_bins): $(test_objects) $(objects)
+	@mkdir -p $(@D)
+	gcc $^ -o $@ -lm
+
+$(example_bins): $(example_objects) $(objects)
 	@mkdir -p $(@D)
 	gcc $^ -o $@ -lm
 
 $(objects): $(src)
 
 $(test_objects): $(test_src)
+
+$(example_objects): $(exmple_src)

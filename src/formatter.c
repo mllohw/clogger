@@ -1,4 +1,4 @@
-/**  clogger implementation
+/**  Formatting functions for clogger
  *
  *   Copyright (C) 2025  Mirko Lindroth
  *   SPDX-License-Identifier: MIT
@@ -10,13 +10,12 @@
 #include <time.h>
 #include <math.h>
 
-size_t format(char *output, const char *format_str, const char *file_name,
+size_t vformat(char *output, const char *format_str, const char *file_name,
 		const char *func_name,const int line_num,
-		const char *message, ...)
+		const char *message, va_list args)
 {
 	size_t bufsz,has_token;
-	// The temp output will be iterated over until all token instances
-	// are replaced.
+
 	bufsz = strlen(format_str) + 1;
 	char *temp_out = (char*)malloc(bufsz*sizeof(char));
 	strcpy(temp_out,format_str);
@@ -25,7 +24,23 @@ size_t format(char *output, const char *format_str, const char *file_name,
 	char *line_num_str = (char*)malloc((log10(line_num)+1)*sizeof(char));
 	sprintf(line_num_str,"%d",line_num);
 
+	// Get datetime str if datetime format is given
+	char datetime_fmt[] = "%Y-%m-%d %Z %H:%M:%S";
+	char *dt_out;
+	size_t dt_bufsz;
+	if(datetime_fmt != NULL) {
+		dt_bufsz = get_datetime(NULL,datetime_fmt) + 1;
+		dt_out = (char*)malloc(dt_bufsz*sizeof(char));
+		get_datetime(dt_out,datetime_fmt);
+	}
+
 	// Replace format specifiers
+	has_token = replace_token(NULL,temp_out,"%(datetime)",dt_out);
+	if(has_token) {
+		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
+		bufsz = replace_token(temp_out,temp_out,"%(datetime)",dt_out);
+	}
+
 	has_token = replace_token(NULL,temp_out,"%(file)",file_name);
 	if(has_token) {
 		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
@@ -46,7 +61,85 @@ size_t format(char *output, const char *format_str, const char *file_name,
 
 	has_token = replace_token(NULL,temp_out,"%(message)",message);
 	if(has_token) {
-		va_list(args);
+
+		// Calculate buffer for message formatting
+		va_list temp_args;
+		va_copy(temp_args,args);
+		size_t msg_bufsz = vsnprintf(NULL,0,message,temp_args);
+
+		// Allocate buffer to format the message
+		char *temp_msg = malloc((msg_bufsz+1)*sizeof(char));
+
+		// Format message
+		vsprintf(temp_msg,message,args);
+
+		// Format output
+		has_token = replace_token(NULL,temp_out,"%(message)",temp_msg);
+		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
+		bufsz = replace_token(temp_out,temp_out,"%(message)",temp_msg);
+		free(temp_msg);
+	}
+
+	if(output != NULL) {strcpy(output,temp_out);}
+
+	free(line_num_str);
+	free(temp_out);
+	free(dt_out);
+	return bufsz;
+}
+
+size_t format(char *output, const char *format_str, const char *file_name,
+		const char *func_name,const int line_num,
+		const char *message, ...)
+{
+	size_t bufsz,has_token;
+
+	bufsz = strlen(format_str) + 1;
+	char *temp_out = (char*)malloc(bufsz*sizeof(char));
+	strcpy(temp_out,format_str);
+
+	// Convert line number to string
+	char *line_num_str = (char*)malloc((log10(line_num)+1)*sizeof(char));
+	sprintf(line_num_str,"%d",line_num);
+
+	// Get datetime str if datetime format is given
+	char datetime_fmt[] = "%Y-%m-%d %Z %H:%M:%S";
+	char *dt_out;
+	size_t dt_bufsz;
+	if(datetime_fmt != NULL) {
+		dt_bufsz = get_datetime(NULL,datetime_fmt) + 1;
+		dt_out = (char*)malloc(dt_bufsz*sizeof(char));
+		get_datetime(dt_out,datetime_fmt);
+	}
+
+	// Replace format specifiers
+	has_token = replace_token(NULL,temp_out,"%(datetime)",dt_out);
+	if(has_token) {
+		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
+		bufsz = replace_token(temp_out,temp_out,"%(datetime)",dt_out);
+	}
+
+	has_token = replace_token(NULL,temp_out,"%(file)",file_name);
+	if(has_token) {
+		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
+		bufsz = replace_token(temp_out,temp_out,"%(file)",file_name);
+	}
+
+	has_token = replace_token(NULL,temp_out,"%(func)",func_name);
+	if(has_token) {
+		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
+		bufsz = replace_token(temp_out,temp_out,"%(func)",func_name);
+	}
+
+	has_token = replace_token(NULL,temp_out,"%(line)",line_num_str);
+	if(has_token) {
+		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
+		bufsz = replace_token(temp_out,temp_out,"%(line)",line_num_str);
+	}
+
+	has_token = replace_token(NULL,temp_out,"%(message)",message);
+	if(has_token) {
+		va_list args;
 
 		// Calculate buffer for message formatting
 		va_start(args,message);
@@ -72,6 +165,7 @@ size_t format(char *output, const char *format_str, const char *file_name,
 
 	free(line_num_str);
 	free(temp_out);
+	free(dt_out);
 	return bufsz;
 }
 
