@@ -15,7 +15,6 @@ bin_dir          := $(makefile_dir)/bin
 # Lib sources
 src := $(shell find $(src_dir) -type f -name "*.c" -o -name "*.h")
 objects := $(patsubst %.c, %.o, $(filter %.c,$(src)))
-bin := $(bin_dir)/clogger
 
 # Test sources
 test_src := $(shell find $(test_dir) -type f -name "*.c" -o -name "*.h")
@@ -72,10 +71,6 @@ mostlyclean:
 	rm -rf $(test_objects)
 	rm -rf $(example_objects)
 	rm -rf *.log
-
-$(bin_dir)/clogger: $(objects)
-	@mkdir -p $(@D)
-	gcc $^ -o $@ -lm
 
 $(test_bins): $(test_objects) $(objects)
 	@mkdir -p $(@D)
