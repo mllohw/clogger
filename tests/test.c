@@ -16,9 +16,12 @@ void tc_replace_next_token();
 void tc_replace_token();
 void tc_vreplace_token(const char *ref_out,...);
 void tc_format();
+void tc_vformat(const char format_str[],const char ref_out[],
+		const char msg[],...);
 
 int main()
 {
+	// Test formatting
 	tc_datetime();
 	tc_replace_next_token();
 	tc_replace_token();
@@ -27,54 +30,83 @@ int main()
 			"some/long/path/here/abc.c",
 			"another/longer/path/to/test/this/def.c", "ghi.c");
 	tc_format();
+	tc_vformat("%(message)","Hello World!\n","Hello %s\n","World!");
+
 	return EXIT_SUCCESS;
+}
+
+void tc_vformat(const char format_str[],const char ref_out[],
+		const char msg[],...)
+{
+	va_list args,args2;
+
+	// Test printing variadic message with va_list
+	va_start(args,msg);
+	va_copy(args2,args);
+	size_t bufsz = vformat(NULL,format_str,"test.c","myfunc",42,"clogger",
+			"INFO","%Y-%m-%d %Z %H:%M:%S",msg,args);
+	va_end(args);
+	// Test buffer size return value matches ref_out size
+	if(bufsz != strlen(ref_out)) {exit(1);}
+	printf("[Success] %s: Buffer size = %td\n",__func__,bufsz);
+	// Test formatting of output
+	va_start(args,msg);
+	char *output = malloc((bufsz+1)*sizeof(char));
+	vformat(output,format_str,"test.c","myfunc",42,"clogger",
+			"INFO","%Y-%m-%d %Z %H:%M:%S",msg,args);
+	if(strcmp(output,ref_out)) {exit(1);}
+	printf("[Success] %s: %s",__func__,output);
+	va_end(args);
 }
 
 void tc_format()
 {
-	// Test simple formatting
-	char format_str[] = "[app] %(file): %(func)(%(line))";
-	char ref_out[] = "[app] test.c: myfunc(42)";
-	size_t bufsz = format(NULL,format_str,"test.c","myfunc",42,NULL);
-	// Test buffer size return value matches ref_out
+	// Test different format specifiers
+	char format_str[] = "[%(app)] %(msg_type) %(file): %(func)(%(line))";
+	char ref_out[] = "[clogger] INFO test.c: myfunc(42)";
+	size_t bufsz = format(NULL,format_str,"test.c","myfunc",42,"clogger",
+			"INFO","%Y-%m-%d %Z %H:%M:%S",NULL);
+	// Test buffer size return value matches ref_out size
 	if(bufsz != strlen(ref_out)) {exit(1);}
 	printf("[Success] %s: Buffer size = %td\n",__func__,bufsz);
 	// Test formatting of output
 	char *output = malloc((bufsz+1)*sizeof(char));
-	format(output,format_str,"test.c","myfunc",42,NULL);
+	format(output,format_str,"test.c","myfunc",42,"clogger",
+			"INFO","%Y-%m-%d %Z %H:%M:%S",NULL);
 	if(strcmp(output,ref_out)) {exit(1);}
 	printf("[Success] %s: %s\n",__func__,output);
 
 	// Test multiple same format specifiers
-	char mformat_str[] = "%(file) %(file) %(file)";
-	char mref_out[] = "/some/path/test.c ""/some/path/test.c "
-		"/some/path/test.c";
-	bufsz = format(NULL,mformat_str,"/some/path/test.c",__func__,__LINE__,NULL);
+	char mformat_str[] = "%(file) %(file)";
+	char mref_out[] = "/some/path/test.c /some/path/test.c";
+	bufsz = format(NULL,mformat_str,"/some/path/test.c",__func__,__LINE__,
+			"clogger","INFO","%Y-%m-%d %Z %H:%M:%S",NULL);
 	// Test buffer size return value matches ref_out
 	if(bufsz != strlen(mref_out)) {exit(1);}
 	printf("[Success] %s: Buffer size = %td\n",__func__,bufsz);
 	// Test formatting of output
 	char *moutput = malloc((bufsz+1)*sizeof(char));
-	format(moutput,mformat_str,"/some/path/test.c",__func__,__LINE__,NULL);
+	format(moutput,mformat_str,"/some/path/test.c",__func__,__LINE__,
+			"clogger","INFO","%Y-%m-%d %Z %H:%M:%S",NULL);
 	if(strcmp(moutput,mref_out)) {exit(1);}
 	printf("[Success] %s: %s\n",__func__,moutput);
 
 	// Test with variadic format specifier
-	char vformat_str[] = "[app] %(file)[%(func)](%(line)): %(message)";
-	char vref_out[] = "[app] test.c[myfunc](42): Hello World!\n";
-	bufsz = format(NULL,vformat_str,
-			"test.c","myfunc",42,"Hello %s\n",
-			"World!");
+	char vformat_str[] = "[%(app)] %(msg_type) %(file)[%(func)](%(line)): %(message)";
+	char vref_out[] = "[clogger] INFO test.c[myfunc](42): Hello World!\n";
+	bufsz = format(NULL,vformat_str,"test.c","myfunc",42,
+			"clogger","INFO","%Y-%m-%d %Z %H:%M:%S",
+			"Hello %s\n","World!");
 	// Test buffer size return value matches ref_out
 	if(bufsz != strlen(vref_out)) {exit(1);}
 	printf("[Success] %s: Buffer size = %td\n",__func__,bufsz);
 	// Test formatting of output
 	char *voutput = malloc((bufsz+1)*sizeof(char));
-	format(voutput,vformat_str,
-			"test.c","myfunc",42,"Hello %s\n",
-			"World!");
+	format(voutput,vformat_str,"test.c","myfunc",42,
+			"clogger","INFO","%Y-%m-%d %Z %H:%M:%S",
+			"Hello %s\n","World!");
 	if(strcmp(voutput,vref_out)) {exit(1);}
-	printf("[Success] %s: %s\n",__func__,voutput);
+	printf("[Success] %s: %s",__func__,voutput);
 
 	free(output);
 	free(moutput);
@@ -127,20 +159,10 @@ void tc_replace_token()
 void tc_datetime()
 {
 	char datetime_fmt[] = "%Y-%m-%d %Z %H:%M:%S";
-	size_t bufsz = get_datetime(NULL,datetime_fmt) + 1;
-	// Testing return value when output is not large enough
-	char *datetime_output = (char*)malloc((bufsz-1)*sizeof(char));
-	size_t ret = get_datetime(datetime_output,datetime_fmt);
-	if(!ret) {
-		free(datetime_output);
-		exit(1);
-	}
+	size_t bufsz = format_datetime(NULL,datetime_fmt);
 	// Testing return value to calculate needed size
-	datetime_output = (char*)realloc(datetime_output, bufsz*sizeof(char));
-	if(!get_datetime(datetime_output,datetime_fmt)) {
-		free(datetime_output);
-		exit(1);
-	}
+	char *datetime_output = (char*)malloc((bufsz+1)*sizeof(char));
+	format_datetime(datetime_output,datetime_fmt);
 	printf("[Success] %s: %s\n",__func__,datetime_output);
 	free(datetime_output);
 }
