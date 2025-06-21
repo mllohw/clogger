@@ -7,6 +7,7 @@
 #define CLOGGER_TEST
 
 #include <clogger/formatter.h>
+#include <clogger/clogger.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,6 +19,9 @@ void tc_vreplace_token(const char *ref_out,...);
 void tc_format();
 void tc_vformat(const char format_str[],const char ref_out[],
 		const char msg[],...);
+void tc_msg_with_verb_ctrl(struct clogger_conf conf);
+void tc_verbosity_ctrl(struct clogger_conf conf);
+void tc_reporting_macros(struct clogger_conf conf);
 
 int main()
 {
@@ -32,7 +36,47 @@ int main()
 	tc_format();
 	tc_vformat("%(message)","Hello World!\n","Hello %s\n","World!");
 
+	// Test logging
+	struct clogger_conf conf ={
+		.verbosity=AVG,
+		.app_name="clogger",
+		.log_file="clogger.log",
+		.datetime_fmt="%Y-%m-%d %Z %H:%M:%S",
+		.fmt_str="[%(app)] %(datetime) \033[32m%(msg_type)\033[0m %(file): "
+			"%(func)(%(line)) \n%(message)"
+	};
+	remove(conf.log_file);
+
+	tc_msg_with_verb_ctrl(conf);
+	tc_verbosity_ctrl(conf);
+	tc_reporting_macros(conf);
+
 	return EXIT_SUCCESS;
+}
+
+void tc_reporting_macros(struct clogger_conf conf)
+{
+	info(conf,LOW,"Reporting macro with %s verbosity\n",MACRO_NAME(LOW));
+}
+
+void tc_verbosity_ctrl(struct clogger_conf conf)
+{
+	// This should not print
+	conf.verbosity = NONE;
+	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
+			"Verbosity is %s and message verbosity %s\n",
+			MACRO_NAME(NONE),MACRO_NAME(LOW));
+	// This should print
+	conf.verbosity = HIGH;
+	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
+			"Verbosity is %s and message verbosity %s\n",
+			MACRO_NAME(HIGH),MACRO_NAME(LOW));
+}
+
+void tc_msg_with_verb_ctrl(struct clogger_conf conf)
+{
+	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
+			"Hello %s","World!\n");
 }
 
 void tc_vformat(const char format_str[],const char ref_out[],
