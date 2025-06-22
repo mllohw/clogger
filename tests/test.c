@@ -38,13 +38,45 @@ int main()
 
 	// Test logging
 	struct clogger_conf conf = {
-		.verbosity=AVG,
+		.verbosity=FULL,
 		.app_name="clogger",
 		.log_file="clogger.log",
 		.datetime_fmt="%Y-%m-%d %Z %H:%M:%S",
-		.fmt={
+		.debug_fmt={
+			.console_format="[%(app)] %(datetime) "
+				"\033[34m%(msg_type)\033[0m %(file): "
+				"%(func)(%(line)) \n%(message)",
+			.log_file_format="[%(app)] %(datetime) "
+				"%(msg_type) %(file): "
+				"%(func)(%(line)) \n%(message)"
+		},
+		.info_fmt={
 			.console_format="[%(app)] %(datetime) "
 				"\033[32m%(msg_type)\033[0m %(file): "
+				"%(func)(%(line)) \n%(message)",
+			.log_file_format="[%(app)] %(datetime) "
+				"%(msg_type) %(file): "
+				"%(func)(%(line)) \n%(message)"
+		},
+		.warning_fmt={
+			.console_format="[%(app)] %(datetime) "
+				"\033[33m%(msg_type)\033[0m %(file): "
+				"%(func)(%(line)) \n%(message)",
+			.log_file_format="[%(app)] %(datetime) "
+				"%(msg_type) %(file): "
+				"%(func)(%(line)) \n%(message)"
+		},
+		.error_fmt={
+			.console_format="[%(app)] %(datetime) "
+				"\033[31m%(msg_type)\033[0m %(file): "
+				"%(func)(%(line)) \n%(message)",
+			.log_file_format="[%(app)] %(datetime) "
+				"%(msg_type) %(file): "
+				"%(func)(%(line)) \n%(message)"
+		},
+		.fatal_fmt={
+			.console_format="[%(app)] %(datetime) "
+				"\033[41m\033[30m%(msg_type)\033[0m %(file): "
 				"%(func)(%(line)) \n%(message)",
 			.log_file_format="[%(app)] %(datetime) "
 				"%(msg_type) %(file): "
@@ -62,7 +94,11 @@ int main()
 
 void tc_reporting_macros(struct clogger_conf conf)
 {
+	debug(conf,"Debug message!\n");
 	info(conf,LOW,"Reporting macro with %s verbosity\n",MACRO_NAME(LOW));
+	warning(conf,"Warning!\n");
+	error(conf,"Error!\n");
+	fatal(conf,"Fatal!\n");
 }
 
 void tc_verbosity_ctrl(struct clogger_conf conf)
@@ -70,11 +106,13 @@ void tc_verbosity_ctrl(struct clogger_conf conf)
 	// This should not print
 	conf.verbosity = NONE;
 	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
+			conf.info_fmt,
 			"Verbosity is %s and message verbosity %s\n",
 			MACRO_NAME(NONE),MACRO_NAME(LOW));
 	// This should print
 	conf.verbosity = HIGH;
 	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
+			conf.info_fmt,
 			"Verbosity is %s and message verbosity %s\n",
 			MACRO_NAME(HIGH),MACRO_NAME(LOW));
 }
@@ -82,6 +120,7 @@ void tc_verbosity_ctrl(struct clogger_conf conf)
 void tc_msg_with_verb_ctrl(struct clogger_conf conf)
 {
 	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
+			conf.info_fmt,
 			"Hello %s","World!\n");
 }
 

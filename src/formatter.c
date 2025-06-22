@@ -234,7 +234,7 @@ size_t format_datetime(char *output, const char *format_str)
 	}
 	bufsz = strlen(buff);
 	// Write datetime formatted string to output
-	if(output != NULL) {strcpy(output,buff);}
+	if(output != NULL) {strncpy(output,buff,(bufsz+1));}
 
 	free(buff);
 	return bufsz;
