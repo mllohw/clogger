@@ -20,6 +20,7 @@ extern "C" {
 #define AVG 200
 #define HIGH 300
 #define FULL 400
+#define DEBUG 500
 
 struct log_format {
 	char *console_format;
@@ -46,7 +47,7 @@ void clog_msg_with_verb_ctrl(struct clogger_conf conf, const char *file_name,
 
 // Reporting macros for different message types
 #define debug(conf,msg,...) \
-	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,AVG,"DEBUG",\
+	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,DEBUG,"DEBUG",\
 			conf.debug_fmt,msg,##__VA_ARGS__)
 
 #define info(conf,verb,msg,...) \

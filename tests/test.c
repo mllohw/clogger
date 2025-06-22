@@ -38,7 +38,7 @@ int main()
 
 	// Test logging
 	struct clogger_conf conf = {
-		.verbosity=FULL,
+		.verbosity=DEBUG,
 		.app_name="clogger",
 		.log_file="clogger.log",
 		.datetime_fmt="%Y-%m-%d %Z %H:%M:%S",
