@@ -23,7 +23,7 @@
 	va_end(args);
 
 
-void clog_msg_with_verb_ctrl(struct clogger_conf conf, const char *file_name,
+void clog_msg(struct clogger_conf conf, const char *file_name,
 		const char *func_name, int line_num, int verbosity,
 		const char *msg_type, struct log_format fmt,
 		const char *message, ...)

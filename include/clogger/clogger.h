@@ -40,30 +40,30 @@ struct clogger_conf {
 };
 
 // Console and file logging functions
-void clog_msg_with_verb_ctrl(struct clogger_conf conf, const char *file_name,
+void clog_msg(struct clogger_conf conf, const char *file_name,
 		const char *func_name, int line_num, int verbosity,
 		const char *msg_type, struct log_format fmt,
 		const char *message, ...);
 
 // Reporting macros for different message types
 #define debug(conf,msg,...) \
-	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,DEBUG,"DEBUG",\
+	clog_msg(conf,__FILE__,__func__,__LINE__,DEBUG,"DEBUG",\
 			conf.debug_fmt,msg,##__VA_ARGS__)
 
 #define info(conf,verb,msg,...) \
-	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,verb,"INFO",\
+	clog_msg(conf,__FILE__,__func__,__LINE__,verb,"INFO",\
 			conf.info_fmt,msg,##__VA_ARGS__)
 
 #define warning(conf,msg,...) \
-	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,NONE,"WARNING",\
+	clog_msg(conf,__FILE__,__func__,__LINE__,NONE,"WARNING",\
 			conf.warning_fmt,msg,##__VA_ARGS__)
 
 #define error(conf,msg,...) \
-	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,NONE,"ERROR",\
+	clog_msg(conf,__FILE__,__func__,__LINE__,NONE,"ERROR",\
 			conf.error_fmt,msg,##__VA_ARGS__)
 
 #define fatal(conf,msg,...) \
-	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,NONE,"FATAL",\
+	clog_msg(conf,__FILE__,__func__,__LINE__,NONE,"FATAL",\
 			conf.fatal_fmt,msg,##__VA_ARGS__)
 
 #ifdef __cplusplus

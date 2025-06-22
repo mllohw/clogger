@@ -105,13 +105,13 @@ void tc_verbosity_ctrl(struct clogger_conf conf)
 {
 	// This should not print
 	conf.verbosity = NONE;
-	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
+	clog_msg(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
 			conf.info_fmt,
 			"Verbosity is %s and message verbosity %s\n",
 			MACRO_NAME(NONE),MACRO_NAME(LOW));
 	// This should print
 	conf.verbosity = HIGH;
-	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
+	clog_msg(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
 			conf.info_fmt,
 			"Verbosity is %s and message verbosity %s\n",
 			MACRO_NAME(HIGH),MACRO_NAME(LOW));
@@ -119,7 +119,7 @@ void tc_verbosity_ctrl(struct clogger_conf conf)
 
 void tc_msg_with_verb_ctrl(struct clogger_conf conf)
 {
-	clog_msg_with_verb_ctrl(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
+	clog_msg(conf,__FILE__,__func__,__LINE__,LOW,"INFO",
 			conf.info_fmt,
 			"Hello %s","World!\n");
 }
