@@ -10,6 +10,13 @@
 #include <time.h>
 #include <math.h>
 
+#define replace_format_specifier(format_specifier,value) \
+	has_token = replace_token(NULL,temp_out,format_specifier,value);\
+	if(has_token) {\
+		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));\
+		bufsz = replace_token(temp_out,temp_out,format_specifier,value);\
+	}
+
 size_t vformat(char *output, const char *format_str, const char *file_name,
 		const char *func_name,const int line_num, const char *app,
 		const char *msg_type, const char *datetime_fmt,
@@ -35,40 +42,12 @@ size_t vformat(char *output, const char *format_str, const char *file_name,
 	}
 
 	// Replace format specifiers
-	has_token = replace_token(NULL,temp_out,"%(app)",app);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(app)",app);
-	}
-	has_token = replace_token(NULL,temp_out,"%(msg_type)",msg_type);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(msg_type)",msg_type);
-	}
-
-	has_token = replace_token(NULL,temp_out,"%(datetime)",dt_out);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(datetime)",dt_out);
-	}
-
-	has_token = replace_token(NULL,temp_out,"%(file)",file_name);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(file)",file_name);
-	}
-
-	has_token = replace_token(NULL,temp_out,"%(func)",func_name);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(func)",func_name);
-	}
-
-	has_token = replace_token(NULL,temp_out,"%(line)",line_num_str);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(line)",line_num_str);
-	}
+	replace_format_specifier("%(app)",app)
+	replace_format_specifier("%(msg_type)",msg_type)
+	replace_format_specifier("%(datetime)",dt_out)
+	replace_format_specifier("%(file)",file_name)
+	replace_format_specifier("%(func)",func_name)
+	replace_format_specifier("%(line)",line_num_str)
 
 	has_token = replace_token(NULL,temp_out,"%(message)",NULL);
 	if(has_token) {
@@ -124,48 +103,12 @@ size_t format(char *output, const char *format_str, const char *file_name,
 	}
 
 	// Replace format specifiers
-	has_token = replace_token(NULL,temp_out,"%(app)",app);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(app)",app);
-	}
-
-	has_token = replace_token(NULL,temp_out,"%(msg_type)",msg_type);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(msg_type)",msg_type);
-	}
-
-	has_token = replace_token(NULL,temp_out,"%(datetime)",dt_out);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(datetime)",dt_out);
-	}
-
-	// Replace format specifiers
-	has_token = replace_token(NULL,temp_out,"%(datetime)",dt_out);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(datetime)",dt_out);
-	}
-
-	has_token = replace_token(NULL,temp_out,"%(file)",file_name);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(file)",file_name);
-	}
-
-	has_token = replace_token(NULL,temp_out,"%(func)",func_name);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(func)",func_name);
-	}
-
-	has_token = replace_token(NULL,temp_out,"%(line)",line_num_str);
-	if(has_token) {
-		temp_out = (char*)realloc(temp_out,(has_token+1)*sizeof(char));
-		bufsz = replace_token(temp_out,temp_out,"%(line)",line_num_str);
-	}
+	replace_format_specifier("%(app)",app)
+	replace_format_specifier("%(msg_type)",msg_type)
+	replace_format_specifier("%(datetime)",dt_out)
+	replace_format_specifier("%(file)",file_name)
+	replace_format_specifier("%(func)",func_name)
+	replace_format_specifier("%(line)",line_num_str)
 
 	has_token = replace_token(NULL,temp_out,"%(message)",message);
 	if(has_token) {
