@@ -21,11 +21,16 @@ extern "C" {
 #define HIGH 300
 #define FULL 400
 
+struct log_formats {
+	char *console_format;
+	char *log_file_format;
+};
+
 struct clogger_conf {
 	int verbosity;
 	char *app_name;
 	char *log_file;
-	char *fmt_str;
+	struct log_formats fmt;
 	char *datetime_fmt;
 };
 

@@ -37,13 +37,19 @@ int main()
 	tc_vformat("%(message)","Hello World!\n","Hello %s\n","World!");
 
 	// Test logging
-	struct clogger_conf conf ={
+	struct clogger_conf conf = {
 		.verbosity=AVG,
 		.app_name="clogger",
 		.log_file="clogger.log",
 		.datetime_fmt="%Y-%m-%d %Z %H:%M:%S",
-		.fmt_str="[%(app)] %(datetime) \033[32m%(msg_type)\033[0m %(file): "
-			"%(func)(%(line)) \n%(message)"
+		.fmt={
+			.console_format="[%(app)] %(datetime) "
+				"\033[32m%(msg_type)\033[0m %(file): "
+				"%(func)(%(line)) \n%(message)",
+			.log_file_format="[%(app)] %(datetime) "
+				"%(msg_type) %(file): "
+				"%(func)(%(line)) \n%(message)"
+		}
 	};
 	remove(conf.log_file);
 
